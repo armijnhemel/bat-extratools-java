@@ -26,8 +26,8 @@
 </target>
 
 <target name="package" depends="compile">
-	<delete file="${home}/ddx.jar"/>
-	<jar destfile="${home}/ddx.jar"
+	<delete file="${home}/bat-ddx.jar"/>
+	<jar destfile="${home}/bat-ddx.jar"
 	   manifest="${home}/etc/manifest.mf">
 		<fileset dir="${classdir}">
             <include name="**/dedexer/*"/>
@@ -38,7 +38,7 @@
 <target name="clean">
 <!-- Delete the ${build} directory trees -->
   <delete dir="${classdir}"/>
-  <delete file="${home}/ddx.jar"/>
+  <delete file="${home}/bat-ddx.jar"/>
 </target>
 
 </project>
