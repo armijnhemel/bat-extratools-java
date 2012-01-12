@@ -2,7 +2,7 @@ Source: bat-extratools-java
 Section: misc
 Priority: extra
 Maintainer: Armijn Hemel <armijn@binaryanalysis.org>
-Build-Depends: debhelper (>= 7.0.50~), ant, default-jdk
+Build-Depends: debhelper (>= 7.0.50~), javahelper, ant, default-jdk
 Standards-Version: 3.9.1
 Homepage: http://www.binaryanalysis.org/
 
