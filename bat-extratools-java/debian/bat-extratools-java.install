@@ -1,1 +1,2 @@
-dedexer/ddx.jar usr/share/ddx
+dedexer/bat-ddx.jar usr/share/java
+jdeserialize/bat-jdeserialize.jar usr/share/java
