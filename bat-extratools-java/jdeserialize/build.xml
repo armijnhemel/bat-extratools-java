@@ -15,7 +15,7 @@
     </target>
 
     <target name="build-jar">
-        <jar destfile="jdeserialize.jar" filesetmanifest="mergewithoutmain">
+        <jar destfile="bat-jdeserialize.jar" filesetmanifest="mergewithoutmain">
             <fileset dir="${build.dir}" includes="**/*class" />
             <fileset dir="." includes="${src.dir}/**/*" />
             <fileset dir="." includes="build.xml" />
