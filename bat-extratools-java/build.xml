@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<project name="bat-extratools-java" default="all" basedir=".">
+  <target name="all">
+    <ant dir="dedexer"/>
+    <ant dir="jdeserialize"/>
+  </target>
+
+  <target name="clean">
+  <!-- Delete the ${build} directory trees -->
+    <ant dir="dedexer"/>
+    <ant dir="jdeserialize"/>
+  </target>
+
+</project>
