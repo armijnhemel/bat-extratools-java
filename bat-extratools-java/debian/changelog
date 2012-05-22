@@ -1,0 +1,17 @@
+bat-extratools-java (8.0) unstable; urgency=low
+
+  * version bump to keep in sync with the rest
+
+ -- Armijn Hemel <armijn@binaryanalysis.org>  Mon, 22 May 2012 22:55:05 +0200
+
+bat-extratools-java (7.0) unstable; urgency=low
+
+  * version bump to keep in sync with the rest
+
+ -- Armijn Hemel <armijn@binaryanalysis.org>  Mon, 23 Apr 2012 23:33:05 +0200
+
+bat-extratools-java (6.0) unstable; urgency=low
+
+  * Initial release
+
+ -- Armijn Hemel <armijn@binaryanalysis.org>  Mon, 09 Jan 2012 18:23:43 +0200
