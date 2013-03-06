@@ -1,0 +1,8 @@
+This directory contains several packages, that are packaged for use with BAT. They are either slightly modified by the authors of BAT, or are lifted from GPL source code releases from devices, or firmware replacement projects.
+
+They are completely separate from BAT and are not under the same license as BAT. Please check the individual directories for license conditions.
+
+Included are:
+
+* dedexer - from http://dedexer.sourceforge.net/ - license on the webpage says "Dedexer is in the public domain, no rights are reserved. If you reuse it, please, retain the credits."
+* jdeserialize - from http://code.google.com/p/jdeserialize/ - license in the source code says "public domain", on code.google.com it says 'New BSD license'
