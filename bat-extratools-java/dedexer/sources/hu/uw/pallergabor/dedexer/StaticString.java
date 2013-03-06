@@ -11,7 +11,9 @@ public class StaticString {
 		}
 
 		public String toString() {
-			return "\""+instance.toString()+"\"";
+			return "\""+
+				DexStringIdsBlock.escapeString( instance.toString() )+
+				"\"";
 		}
 
         public boolean equals( Object o ) {

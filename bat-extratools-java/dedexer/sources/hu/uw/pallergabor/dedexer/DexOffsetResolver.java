@@ -81,12 +81,17 @@ public class DexOffsetResolver {
   * @param index The index of the inline method
   * @return method name,proto separated by a comma
   */
-    public String getInlineMethodNameFromIndex( int index ) {
-        if( index >= inlineMethods.length )
+    public static String getInlineMethodNameFromIndex( int index,
+				DexSignatureBlock.OptVersion optVersion ) {
+	String inlineMethodsForCurrentVersion[][] =
+		optVersion == DexSignatureBlock.OptVersion.OPTVERSION_36 ? 			inlineMethods_36
+		:
+		inlineMethods_35;
+        if( index >= inlineMethodsForCurrentVersion.length )
             return null;
-        String clazz = inlineMethods[ index ][ 0 ];
-        String method = inlineMethods[ index ][ 1 ];
-        String signature = inlineMethods[ index ][ 2 ];
+        String clazz = inlineMethodsForCurrentVersion[ index ][ 0 ];
+        String method = inlineMethodsForCurrentVersion[ index ][ 1 ];
+        String signature = inlineMethodsForCurrentVersion[ index ][ 2 ];
         return clazz+"/"+method+","+method+signature;
     }
 
@@ -479,7 +484,7 @@ public class DexOffsetResolver {
             new HashMap<String,DexOffsetDescriptor>();
     PrintStream dump;
 
-    private String inlineMethods[][] =
+    private static String inlineMethods_35[][] =
     { { "Lorg/apache/harmony/dalvik/NativeTestTarget" ,
         "emptyInlineMethod",
         "()V" },    /* 0 */
@@ -523,6 +528,76 @@ public class DexOffsetResolver {
         "sin",
         "(D)D" }                    /* 13 */
     };
+
+    private static String inlineMethods_36[][] =
+    { { "Lorg/apache/harmony/dalvik/NativeTestTarget" ,
+        "emptyInlineMethod",
+        "()V" },    /* 0 */
+      { "Ljava/lang/String",
+        "charAt",
+        "(I)C" },   /* 1 */
+      { "Ljava/lang/String",
+        "compareTo",
+        "(Ljava/lang/String;)I" },  /* 2 */
+      { "Ljava/lang/String",
+        "equals",
+        "(Ljava/lang/Object;)Z" },  /* 3 */
+      { "Ljava/lang/String",
+        "fastIndexOf",
+        "(II)I" },  		/* 4 */
+      { "Ljava/lang/String",
+        "isEmpty",
+        "()Z" },  		/* 5 */
+      { "Ljava/lang/String",
+        "length",
+        "()I" },                    /* 6 */
+      { "Ljava/lang/Math",
+        "abs",
+        "(I)I" },                   /* 7 */
+      { "Ljava/lang/Math",
+        "abs",
+        "(J)J" },                   /* 8 */
+      { "Ljava/lang/Math",
+        "abs",
+        "(F)F" },                   /* 9 */
+      { "Ljava/lang/Math",
+        "abs",
+        "(D)D" },                   /* 10 */
+      { "Ljava/lang/Math",
+        "min",
+        "(II)I" },                  /* 11 */
+      { "Ljava/lang/Math",
+        "max",
+        "(II)I" },                  /* 12 */
+      { "Ljava/lang/Math",
+        "sqrt",
+        "(D)D" },                   /* 13 */
+      { "Ljava/lang/Math",
+        "cos",
+        "(D)D" },                   /* 14 */
+      { "Ljava/lang/Math",
+        "sin",
+        "(D)D" },                    /* 15 */
+      { "Ljava/lang/Float",
+        "floatToIntBits",
+        "(F)I" },                    /* 16 */
+      { "Ljava/lang/Float",
+        "floatToRawIntBits",
+        "(F)I" },                    /* 17 */
+      { "Ljava/lang/Float",
+        "intBitsToFloat",
+        "(I)F" },                    /* 18 */
+      { "Ljava/lang/Double",
+        "doubleToLongBits",
+        "(D)J" },                    /* 19 */
+      { "Ljava/lang/Double",
+        "doubleToRawLongBits",
+        "(D)J" },                    /* 20 */
+      { "Ljava/lang/Double",
+        "longBitsToDouble",
+        "(J)D" }                    /* 21 */
+    };
+
     private static final boolean DEBUG_VTABLE = false;
     private static final boolean DEBUG_OFFSETS = false;
 

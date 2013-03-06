@@ -26,8 +26,10 @@ public class TaskCollection extends DedexerTask {
     }
 
     public void renderTask( long position ) throws IOException {
-        for( int i = 0 ; i < taskList.size() ; ++i )
-            taskList.get( i ).renderTask( position );
+        for( int i = 0 ; i < taskList.size() ; ++i ) {
+	    DedexerTask task = taskList.get( i );
+            task.renderTask( position );
+	}
     }
 
 /**

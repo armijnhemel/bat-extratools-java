@@ -10,7 +10,9 @@ public class StaticCharacter {
 		}
 
 		public String toString() {
-			return "'"+instance.toString()+"'";
+			return 	"'"+
+				DexStringIdsBlock.escapeString( instance.toString() )+
+				"'";
 		}
 
 		private Character instance;

@@ -63,6 +63,7 @@ public class SparseSwitchTask extends DedexerTask {
     public long[] readJumpTable() throws IOException {
         long origPos = instrParser.getFilePosition();
         instrParser.setFilePosition( offset );
+	long tableBasePos = instrParser.getFilePosition();
         int tableType = instrParser.read16Bit();    
         if( tableType != 0x200 )    // type flag for sparse switch tables
                 throw new IOException( "Invalid sparse-switch table type (0x"+
@@ -78,7 +79,7 @@ public class SparseSwitchTask extends DedexerTask {
             long targetOffset = instrParser.readSigned32Bit();
             jumpTable[i] = base + ( targetOffset * 2 );
         }
-        tableLength = instrParser.getFilePosition() - origPos;
+        tableLength = instrParser.getFilePosition() - tableBasePos;
         instrParser.setFilePosition( origPos );
         return jumpTable;
     }

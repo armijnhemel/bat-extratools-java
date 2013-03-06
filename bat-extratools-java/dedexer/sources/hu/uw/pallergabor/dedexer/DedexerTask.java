@@ -46,8 +46,14 @@ public abstract class DedexerTask {
     public boolean equals( DedexerTask otherTask ) {
         if( otherTask == null )
             return false;
-        return ( offset == otherTask.getOffset() ) &&
-                ( base == otherTask.getBase() );
+	long otherOffset = otherTask.getOffset();
+	long otherBase = otherTask.getBase();
+	if( ( offset == 0L && base == 0L ) ||
+	    ( otherOffset == 0L && otherBase == 0L ) )
+		return toString().equals( otherTask.toString() );
+	else
+        	return ( offset == otherOffset ) &&
+                	( base == otherBase );
     }
 
 /**

@@ -43,10 +43,15 @@ public class DexTypeIdsBlock extends DexParser {
 
     public static String LTypeToJava( String LType ) {
         String className = LType;
-        if( className.startsWith( "L" ) )
+	if( className.startsWith( "[" ) ) {
+		if( ( className.indexOf( "[L" ) >= 0 ) && !className.endsWith( ";" ) )
+			className = className + ";";
+	} else {
+          if( className.startsWith( "L" ) )
             className = className.substring( 1 );
-        if( className.endsWith( ";" ) )
+          if( className.endsWith( ";" ) )
             className = className.substring( 0, className.length() - 1 );
+	}
         return className;
     }
 

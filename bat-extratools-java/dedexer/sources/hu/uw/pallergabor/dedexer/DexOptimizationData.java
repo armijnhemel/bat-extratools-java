@@ -5,6 +5,7 @@
 package hu.uw.pallergabor.dedexer;
 
 public class DexOptimizationData {
+
     public void setDexOffset( long dexOffset ) {
         this.dexOffset = dexOffset;
     }

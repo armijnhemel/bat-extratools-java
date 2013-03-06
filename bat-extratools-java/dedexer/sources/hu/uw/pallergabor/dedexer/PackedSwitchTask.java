@@ -69,6 +69,7 @@ public class PackedSwitchTask extends DedexerTask {
     public long[] readJumpTable() throws IOException {
         long origPos = instrParser.getFilePosition();
         instrParser.setFilePosition( offset );
+	long tableBasePos = instrParser.getFilePosition();
         int tableType = instrParser.read16Bit();
         if( tableType != 0x100 )    // type flag for packed switch tables
             throw new IOException( "Invalid packed-switch table type (0x"+
@@ -82,7 +83,7 @@ public class PackedSwitchTask extends DedexerTask {
             int targetOffset = instrParser.readSigned32Bit();
             jumpTable[i] = base + ( targetOffset * 2 );
         }
-        tableLength = instrParser.getFilePosition() - origPos;
+        tableLength = instrParser.getFilePosition() - tableBasePos;
         instrParser.setFilePosition( origPos );
         return jumpTable;
     }

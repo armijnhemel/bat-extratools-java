@@ -73,7 +73,7 @@ public class DexInstructionParser extends DexParser {
                 instrText.append( "v"+reg );
                 instrText.append( "," );
                 instrText.append( "\""+
-                                dexStringIdsBlock.getString( stringidx )+
+                                DexStringIdsBlock.escapeString( dexStringIdsBlock.getString( stringidx ) )+
                                 "\"" );
 // Move String type to reg
                 affectedRegisters = new int[1];
@@ -89,7 +89,7 @@ public class DexInstructionParser extends DexParser {
                 instrText.append( "v"+reg );
                 instrText.append( "," );
                 instrText.append( "\""+
-                                dexStringIdsBlock.getString( stringidx )+
+                                DexStringIdsBlock.escapeString( dexStringIdsBlock.getString( stringidx ) )+
                                 "\"" );
 // Move String type to reg
                 affectedRegisters = new int[1];
@@ -358,17 +358,19 @@ public class DexInstructionParser extends DexParser {
                     read8Bit();         // Align to 16 bit
                 instrText.append( "}," );
                 boolean offsetResolved = false;
-                if( dexOffsetResolver != null ) {
-                    if( secondPass ) {
+                if( secondPass ) {
                         Long key = new Long( file.getFilePointer() );
                         String parameter = quickParameterMap.get( key );
                         if( parameter != null ) {
                             instrText.append( parameter );
                             offsetResolved = true;
                         }
-                    } else {
+                } else {
                         String methodProto = 
-                            dexOffsetResolver.getInlineMethodNameFromIndex( inlineOffset );
+                            DexOffsetResolver
+				.getInlineMethodNameFromIndex( 
+					inlineOffset,
+					dexSignatureBlock.getOptVersion() );
                         if( methodProto != null ) {
                             String proto = "";
                             int idx = methodProto.indexOf( ',' );
@@ -396,7 +398,6 @@ public class DexInstructionParser extends DexParser {
                                 1 );
                             offsetResolved = true;
                         }
-                    }
                 }
                 if( !offsetResolved )
                     instrText.append( 
@@ -593,6 +594,70 @@ public class DexInstructionParser extends DexParser {
                 if( !offsetResolved )
                     instrText.append( ",vtable #0x"+
                             Integer.toHexString( vtableOffset ) );
+            }
+            break;
+
+            case INLINEMETHODINVOKE_RANGE: {
+                int regno = read8Bit();
+                int inlineOffset = read16Bit();
+                int rangestart = read16Bit();
+                int rangeend = rangestart + regno - 1;
+
+                if( regno == 1 )
+                    instrText.append( "{v"+
+                                rangestart+
+                                "}," );
+                else
+                    instrText.append( "{v"+
+                                    rangestart+
+                                    "..v"+
+                                    rangeend+
+                                    "}," );
+                boolean offsetResolved = false;
+                if( secondPass ) {
+                        Long key = new Long( file.getFilePointer() );
+                        String parameter = quickParameterMap.get( key );
+                        if( parameter != null ) {
+                            instrText.append( parameter );
+                            offsetResolved = true;
+                        }
+                } else {
+                        String methodProto = 
+                           DexOffsetResolver
+				.getInlineMethodNameFromIndex( 
+					inlineOffset,
+					dexSignatureBlock.getOptVersion() );
+                        if( methodProto != null ) {
+                            String proto = "";
+                            int idx = methodProto.indexOf( ',' );
+                            if( idx >= 0 ) {
+                                proto = methodProto.substring( idx+1 );
+                                methodProto = methodProto.substring( 0,idx );
+                            }
+                            String parameter = 
+                                methodProto+"\t; "+proto+
+                                " , inline #0x"+
+                                Integer.toHexString( inlineOffset );
+                            Long key = new Long( file.getFilePointer() );
+                            quickParameterMap.put( key,parameter );
+                            instrText.append( parameter );
+                            String resultType = 
+                                DexMethodIdsBlock.getResultType( proto );
+                            if( "V".equals( resultType ) )
+                                regMap.remove( REGMAP_RESULT_KEY );
+                            else
+                                regMap.put( REGMAP_RESULT_KEY,
+                                    convertJavaTypeToInternal( resultType ) );
+                	    affectedRegisters = 
+                    		getAffectedRegistersForRange( 
+                        		proto, rangestart,1 );
+                            offsetResolved = true;
+                        }
+                }
+                if( !offsetResolved )
+                    instrText.append( 
+                            "inline #0x"+
+                            Integer.toHexString( inlineOffset ) );
             }
             break;
 
@@ -1216,6 +1281,36 @@ public class DexInstructionParser extends DexParser {
             }
             break;
 
+            case REG16REG16: {
+		int garbage = read8Bit();
+                int reg1 = read16Bit();
+                int reg2 = read16Bit();
+                instrText.append( "v"+
+                                    reg1+
+                                    ",v"+
+                                    reg2 );
+                affectedRegisters = new int[2];
+                affectedRegisters[0] = reg1;
+                affectedRegisters[1] = reg2;
+                regMap.put( new Integer( reg1 ),regMap.get( new Integer( reg2 ) ) );
+            }
+            break;
+
+            case REG16REG16_OBJECT: {
+		int garbage = read8Bit();
+                int reg1 = read16Bit();
+                int reg2 = read16Bit();
+                instrText.append( "v"+
+                                    reg1+
+                                    ",v"+
+                                    reg2 );
+                affectedRegisters = new int[2];
+                affectedRegisters[0] = reg1;
+                affectedRegisters[1] = reg2;
+                regMap.put( new Integer( reg1 ),getRegType( instrBase,reg2 ) );
+            }
+            break;
+
 
             case TWOREGSPACKEDCONST16: {
                 int reg = read8Bit();
@@ -1464,6 +1559,10 @@ public class DexInstructionParser extends DexParser {
             dump( "\t"+instrText );
     }
 
+    public void setDexSignatureBlock( DexSignatureBlock dexSignatureBlock ) {
+        this.dexSignatureBlock = dexSignatureBlock;
+    }
+
     public void setDexStringIdsBlock( DexStringIdsBlock dexStringIdsBlock ) {
         this.dexStringIdsBlock = dexStringIdsBlock;
     }
@@ -1625,11 +1724,13 @@ public class DexInstructionParser extends DexParser {
         return internalType;
     }
 
+    private DexSignatureBlock	dexSignatureBlock = null;
     private DexStringIdsBlock   dexStringIdsBlock = null;
     private DexTypeIdsBlock     dexTypeIdsBlock = null;
     private DexFieldIdsBlock    dexFieldIdsBlock = null;
     private DexMethodIdsBlock   dexMethodIdsBlock = null;
     private DexOffsetResolver   dexOffsetResolver = null;
+
     private enum InstructionType {
             UNKNOWN_INSTRUCTION,
             REGCONST4,
@@ -1639,6 +1740,7 @@ public class DexInstructionParser extends DexParser {
             METHODINVOKE_STATIC,
             QUICKMETHODINVOKE,
             INLINEMETHODINVOKE,
+            INLINEMETHODINVOKE_RANGE,
             NEWARRAY,
             FILLARRAYDATA,
             ONEREGFIELD_READ,
@@ -1677,6 +1779,8 @@ public class DexInstructionParser extends DexParser {
             REGCONST64,
             REG8REG16,
             REG8REG16_OBJECT,
+            REG16REG16,
+            REG16REG16_OBJECT,
             TWOREGSPACKEDCONST16,
             METHODINVOKE_RANGE,
             METHODINVOKE_RANGE_STATIC,
@@ -1694,13 +1798,13 @@ public class DexInstructionParser extends DexParser {
 			InstructionType.NOPARAMETER,        	// 0
 			InstructionType.MOVE,       	        // 1
 			InstructionType.REG8REG16,	            // 2
-			InstructionType.UNKNOWN_INSTRUCTION,	// 3
+			InstructionType.REG16REG16,		// 3
 			InstructionType.MOVE,       	        // 4
 			InstructionType.REG8REG16,	            // 5
 			InstructionType.UNKNOWN_INSTRUCTION,	// 6
 			InstructionType.MOVE_OBJECT,	        // 7
 			InstructionType.REG8REG16_OBJECT,	    // 8
-			InstructionType.UNKNOWN_INSTRUCTION,	// 9
+			InstructionType.REG16REG16_OBJECT,	// 9
 			InstructionType.MOVERESULT,             // a
 			InstructionType.MOVERESULT,	            // b
 			InstructionType.MOVERESULT,	            // c
@@ -1918,21 +2022,21 @@ public class DexInstructionParser extends DexParser {
 			InstructionType.TWOREGSCONST8,	// e0
 			InstructionType.TWOREGSCONST8,	// e1
 			InstructionType.TWOREGSCONST8,	// e2
-			InstructionType.UNKNOWN_INSTRUCTION,	// e3
-			InstructionType.UNKNOWN_INSTRUCTION,	// e4
-			InstructionType.UNKNOWN_INSTRUCTION,	// e5
-			InstructionType.UNKNOWN_INSTRUCTION,	// e6
-			InstructionType.UNKNOWN_INSTRUCTION,	// e7
-			InstructionType.UNKNOWN_INSTRUCTION,	// e8
-			InstructionType.UNKNOWN_INSTRUCTION,	// e9
-			InstructionType.UNKNOWN_INSTRUCTION,	// ea
-			InstructionType.UNKNOWN_INSTRUCTION,	// eb
+			InstructionType.TWOREGSFIELD_READ,	// e3
+			InstructionType.TWOREGSFIELD_WRITE,	// e4
+			InstructionType.ONEREGFIELD_READ,	// e5
+			InstructionType.ONEREGFIELD_WRITE,	// e6
+			InstructionType.TWOREGSFIELD_READ_OBJECT,	// e7
+			InstructionType.TWOREGSFIELD_READ_WIDE,	// e8
+			InstructionType.TWOREGSFIELD_WRITE,	// e9
+			InstructionType.ONEREGFIELD_READ_WIDE,	// ea
+			InstructionType.ONEREGFIELD_WRITE,	// eb
 			InstructionType.UNKNOWN_INSTRUCTION,	// ec
 			InstructionType.UNKNOWN_INSTRUCTION,	// ed
 			InstructionType.INLINEMETHODINVOKE,	    // ee
-			InstructionType.UNKNOWN_INSTRUCTION,	// ef
+			InstructionType.INLINEMETHODINVOKE_RANGE,	// ef
 			InstructionType.METHODINVOKE,	        // f0
-			InstructionType.UNKNOWN_INSTRUCTION,	// f1
+			InstructionType.NOPARAMETER,	// f1
 			InstructionType.TWOREGSQUICKOFFSET,	    // f2
 			InstructionType.TWOREGSQUICKOFFSET_WIDE,	    // f3
 			InstructionType.TWOREGSQUICKOFFSET_OBJECT,	    // f4
@@ -1943,9 +2047,9 @@ public class DexInstructionParser extends DexParser {
 			InstructionType.QUICKMETHODINVOKE_RANGE,	// f9
 			InstructionType.QUICKMETHODINVOKE,	    // fa
 			InstructionType.QUICKMETHODINVOKE_RANGE,	// fb
-			InstructionType.UNKNOWN_INSTRUCTION,	// fc
-			InstructionType.UNKNOWN_INSTRUCTION,	// fd
-			InstructionType.UNKNOWN_INSTRUCTION,	// fe
+			InstructionType.TWOREGSFIELD_WRITE,	// fc
+			InstructionType.ONEREGFIELD_READ_OBJECT,	// fd
+			InstructionType.ONEREGFIELD_WRITE,	// fe
 			InstructionType.UNKNOWN_INSTRUCTION 	// ff
     };
 
@@ -1953,13 +2057,13 @@ public class DexInstructionParser extends DexParser {
 		"nop",	// 0
 		"move",	// 1
 		"move/from16",	// 2
-		"",	// 3
+		"move/16",	// 3
 		"move-wide",	// 4
 		"move-wide/from16",	// 5
 		"",	// 6
 		"move-object",	// 7
 		"move-object/from16",	// 8
-		"",	// 9
+		"move-object/16",	// 9
 		"move-result",	// a
 		"move-result-wide",	// b
 		"move-result-object",	// c
@@ -2159,7 +2263,7 @@ public class DexInstructionParser extends DexParser {
 		"div-double/2addr",	// ce
 		"rem-double/2addr",	// cf
 		"add-int/lit16",	// d0
-		"sub-int/lit16",	// d1
+		"rsub-int",	// d1
 		"mul-int/lit16",	// d2
 		"div-int/lit16",	// d3
 		"rem-int/lit16",	// d4
@@ -2167,8 +2271,8 @@ public class DexInstructionParser extends DexParser {
 		"or-int/lit16",	// d6
 		"xor-int/lit16",	// d7
 		"add-int/lit8",	// d8
-		"sub-int/lit8",	// d9
-		"mul-int/lit-8",	// da
+		"rsub-int/lit8",	// d9
+		"mul-int/lit8",	// da
 		"div-int/lit8",	// db
 		"rem-int/lit8",	// dc
 		"and-int/lit8",	// dd
@@ -2177,21 +2281,21 @@ public class DexInstructionParser extends DexParser {
 		"shl-int/lit8",	// e0
 		"shr-int/lit8",	// e1
 		"ushr-int/lit8",	// e2
-		"",	// e3
-		"",	// e4
-		"",	// e5
-		"",	// e6
-		"",	// e7
-		"",	// e8
-		"",	// e9
-		"",	// ea
-		"",	// eb
+		"iget-volatile",	// e3
+		"iput-volatile",	// e4
+		"sget-volatile",	// e5
+		"sput-volatile",	// e6
+		"iget-object-volatile",	// e7
+		"iget-wide-volatile",	// e8
+		"iput-wide-volatile",	// e9
+		"sget-wide-volatile",	// ea
+		"sput-wide-volatile",	// eb
 		"",	// ec
 		"",	// ed
 		"execute-inline",	// ee
-		"",	// ef
+		"execute-inline/range",	// ef
 		"invoke-direct-empty",	// f0
-		"",	// f1
+		"return-void-barrier",	// f1
 		"iget-quick",	// f2
 		"iget-wide-quick",	// f3
 		"iget-object-quick",	// f4
@@ -2202,15 +2306,15 @@ public class DexInstructionParser extends DexParser {
 		"invoke-virtual-quick/range",	// f9
 		"invoke-super-quick",	// fa
 		"invoke-super-quick/range",	// fb
-		"",	// fc
-		"",	// fd
-		"",	// fe
+		"iput-object-volatile",	// fc
+		"sget-object-volatile",	// fd
+		"sput-object-volatile",	// fe
 		""	// ff
     };
 
 // Codes of instructions that terminate the call flow
     int terminateInstructions[] = {
-        0x0E, 0x0F, 0x10, 0x11, 0x27
+        0x0E, 0x0F, 0x10, 0x11, 0x27, 0xF1
     };
 
     private int affectedRegisters[];
@@ -2226,7 +2330,6 @@ public class DexInstructionParser extends DexParser {
                     new HashMap<Long,String>();
     private static final boolean DEBUG_GETAFFECTEDREGSFORREGLIST = false;
     private ArrayList<RegisterTraces> regTraces = null;
-
 
     private long calculateTarget( long instrBase ) throws IOException {
         int offset = read8Bit();

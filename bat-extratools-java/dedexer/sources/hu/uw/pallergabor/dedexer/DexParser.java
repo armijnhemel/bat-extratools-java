@@ -5,6 +5,7 @@ package hu.uw.pallergabor.dedexer;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 public abstract class DexParser {
@@ -126,11 +127,27 @@ public abstract class DexParser {
   * @throws IOException in case of I/O error.
   */
     public String readString() throws IOException {
-        int size = read8Bit();
-        StringBuilder b = new StringBuilder( size );
-        for( int i = 0 ; i < size ; ++i )
-            b.append( (char)read8Bit() );
-        return new String( b );
+        long size = readVLN();
+	long fpos = file.getFilePointer();
+// size is the count of UTF-8 characters in the string while we need the number of bytes.
+// We need to find the terminating zero character for that
+	int stringByteCount = 0;
+	do {
+	  int c = read8Bit();
+	  if( c == 0 )
+		break;
+	  ++stringByteCount;
+	} while( true );
+	byte stringBytes[] = new byte[ stringByteCount ];
+	file.seek( fpos );	// back to the beginning of the string's bytes
+	for( int i = 0 ; i < stringByteCount ; ++i )
+		stringBytes[i] = (byte)read8Bit();
+	read8Bit();	// Discard the terminating 0
+	String r = null;
+	try {
+		r = new String( stringBytes,"UTF-8" );
+	} catch( UnsupportedEncodingException e ) {}
+        return r;
     }
 
 /**

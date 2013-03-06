@@ -18,7 +18,8 @@ public class DexMethodIdsBlock extends DexParser {
             int nameStringIdx = (int)read32Bit();
             StringBuilder b = new StringBuilder();
 // Class name
-            b.append( dexTypeIdsBlock.getClassName( classTypeIdx ) );
+	    String clazzName = dexTypeIdsBlock.getClassName( classTypeIdx );		
+            b.append( clazzName ); 
             b.append( '/' );
 // Field name
             b.append( dexStringIdsBlock.getString( nameStringIdx ) );

@@ -6,6 +6,10 @@ package hu.uw.pallergabor.dedexer;
 import java.io.IOException;
 
 public class DexSignatureBlock extends DexParser {
+    public enum OptVersion {
+	OPTVERSION_35,
+	OPTVERSION_36
+    }
 
     public void parse() throws IOException {
 // Parse the magic numbers
@@ -20,12 +24,15 @@ public class DexSignatureBlock extends DexParser {
         int allowedBytes2[] = { 0x33, 0x31 };
         idx = parseExpected8BitValues( allowedBytes2 );
 // Some DEX files have 0x33 here instead of the standard 0x35
-        int allowedBytes3[] = { 0x35, 0x33 };
-        idx = parseExpected8BitValues( allowedBytes3 );
+        int allowedBytes3[] = { 0x36, 0x35, 0x33 };
+        int optVersionIdx = parseExpected8BitValues( allowedBytes3 );
         parseExpected8Bit( 0x00 );
-        if( isOptimized )
-            dump( "magic: dey\\n035\\0" );
-        else
+        if( isOptimized ) {
+ 	    if( optVersionIdx == 0 )
+            	dump( "magic: dey\\n036\\0" );
+	    else
+            	dump( "magic: dey\\n035\\0" );
+        } else
             dump( "magic: dex\\n035\\0" );
         if( !isOptimized ) {
             checksum = read32Bit();
@@ -55,6 +62,10 @@ public class DexSignatureBlock extends DexParser {
             dexOptimizationData.setDepsLength( depsLength );
             dexOptimizationData.setAuxOffset( auxOffset );
             dexOptimizationData.setAuxLength( auxLength );
+            optVersion =
+		optVersionIdx == 0 ?
+		OptVersion.OPTVERSION_36 :
+		OptVersion.OPTVERSION_35;
             setDexOptimizationData( dexOptimizationData );
         }
     }
@@ -67,6 +78,16 @@ public class DexSignatureBlock extends DexParser {
         return signature;
     }
 
+    public OptVersion getOptVersion() {
+	return optVersion;
+    }
+
+    public void setOptVersion( OptVersion optVersion ) {
+	this.optVersion = optVersion;
+    }
+
+    private OptVersion optVersion;
     private long checksum;
     private int signature[] = new int[20];
+    
 }

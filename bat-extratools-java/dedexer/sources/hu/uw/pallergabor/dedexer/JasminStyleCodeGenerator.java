@@ -345,6 +345,7 @@ public class JasminStyleCodeGenerator implements CodeGenerator {
         long startPos = dexMethodHeadParser.getInstructionBase();
         long endPos = dexMethodHeadParser.getInstructionEnd();
         DexInstructionParser instructionParser = new DexInstructionParser();
+	instructionParser.setDexSignatureBlock( dexSignatureBlock ); 
         instructionParser.setDexStringIdsBlock( dexStringIdsBlock );
         instructionParser.setDexTypeIdsBlock( dexTypeIdsBlock );
         instructionParser.setDexFieldIdsBlock( dexFieldIdsBlock );
@@ -663,6 +664,15 @@ public class JasminStyleCodeGenerator implements CodeGenerator {
                     closeDataArray( label );
                 }
             }
+        }
+// Run any task that may be at the end of the method (mostly labels)
+        DedexerTask task = instructionParser.getTaskForAddress( endPos );
+        if( task != null ) {
+        	try {
+                    task.renderTask( endPos );
+                } catch( IOException ex ) {
+                    System.out.println( "*** ERROR ***: "+ex.getMessage() );
+                }
         }
 // Run the post-second pass processing
         instructionParser.postPassProcessing( true );
@@ -1165,6 +1175,7 @@ public class JasminStyleCodeGenerator implements CodeGenerator {
                                 DexClassDefsBlock.
                                     getClassNameWithoutPrePostfix( innerClassFullName );
                     String innerClassShortName = 
+
                                 DexClassDefsBlock.
                                     getClassNameWithoutPackage( innerClassFullName );
                     String outerClassNameWithoutPrePostfix = 
