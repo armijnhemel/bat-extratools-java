@@ -512,7 +512,14 @@ public class JasminStyleCodeGenerator implements CodeGenerator {
                 if( DEBUG_FLOW )
                         System.out.println( 
                             "Flow: before parse" );
-                instructionParser.parse();
+		try {
+                	instructionParser.parse();
+		} catch( Exception ex ) {
+                	if( DEBUG_FLOW )
+                        	System.out.println( 
+                            		"Flow: hit unknown instruction" );
+			break;
+		}
                 if( DEBUG_FLOW )
                         System.out.println( 
                             "Flow: after parse" );
@@ -583,12 +590,16 @@ public class JasminStyleCodeGenerator implements CodeGenerator {
             }
             if( DEBUG_FLOW )
                 System.out.println( 
-                        "Flow: block parsing exit"+
+                        "Flow: block parsing exit 0x"+
                         Long.toHexString( filePos ) );
 // Branch ended (either by reaching end of method or hitting a previously visited instruction)
 // Pull a new address from the stack or finish if the stack is empty
-            if( visitStack.empty() )
+            if( visitStack.empty() ) {
+            	if( DEBUG_FLOW )
+                	System.out.println( 
+                        "Flow: visit stack empty" );
                 break;
+	    }
             VisitStackEntry entry = visitStack.pop();
             long target = entry.getLocation();
             Long targetObj = new Long( target );
@@ -619,6 +630,10 @@ public class JasminStyleCodeGenerator implements CodeGenerator {
         instructionParser.setPass( true );
         long actualPosition = 0L;
         while( ( actualPosition = instructionParser.getFilePosition() ) < endPos ) {
+	    if( DEBUG_FLOW )
+            	System.out.println( 
+                        "Code generation, file pos: 0x"+
+                        Long.toHexString( actualPosition ) );
             DedexerTask task = instructionParser.getTaskForAddress( actualPosition );
             boolean parseFlag = false;
             if( task != null ) {

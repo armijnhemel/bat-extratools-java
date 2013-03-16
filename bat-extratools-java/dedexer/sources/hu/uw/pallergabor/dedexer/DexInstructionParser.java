@@ -1607,7 +1607,11 @@ public class DexInstructionParser extends DexParser {
     public void postPassProcessing( boolean secondPass ) throws IOException {
         for( int i = 0 ; i < tasks.size() ; ++i ) {
             DedexerTask task = tasks.get( i );
-            task.doTask( secondPass );
+	    try {
+            	task.doTask( secondPass );
+	    } catch( Exception ex ) {
+		System.out.println( "task error (secondPass="+secondPass+") "+ex.getMessage() );
+	    }
         }
     }
 
@@ -1801,7 +1805,7 @@ public class DexInstructionParser extends DexParser {
 			InstructionType.REG16REG16,		// 3
 			InstructionType.MOVE,       	        // 4
 			InstructionType.REG8REG16,	            // 5
-			InstructionType.UNKNOWN_INSTRUCTION,	// 6
+			InstructionType.REG16REG16,	// 6
 			InstructionType.MOVE_OBJECT,	        // 7
 			InstructionType.REG8REG16_OBJECT,	    // 8
 			InstructionType.REG16REG16_OBJECT,	// 9
@@ -2060,7 +2064,7 @@ public class DexInstructionParser extends DexParser {
 		"move/16",	// 3
 		"move-wide",	// 4
 		"move-wide/from16",	// 5
-		"",	// 6
+		"move-wide/16",	// 6
 		"move-object",	// 7
 		"move-object/from16",	// 8
 		"move-object/16",	// 9
@@ -2404,7 +2408,8 @@ public class DexInstructionParser extends DexParser {
             System.out.println( "widthList: "+widthList );
         int affectedRegisters[] = new int[ widthList.size()+notParmReg ];
         for( int i = 0 ; i < notParmReg ; ++i )
-            affectedRegisters[ i ] = registerList.get( i ).intValue();
+		if( i < registerList.size() )
+            		affectedRegisters[ i ] = registerList.get( i ).intValue();
         int regCtr = notParmReg;
         for( int i = 0 ; i < widthList.size() ; ++i ) {
             if( DEBUG_GETAFFECTEDREGSFORREGLIST )

@@ -73,7 +73,6 @@ public class DexAnnotationParser extends DexParser {
                 AnnotationHolder h = new AnnotationHolder();
                 h.asset = DexMethodIdsBlock.getMethodName(
                                 dexMethodIdsBlock.getMethod( methodIdx ) );
-                System.out.println( "putting method for parameter: "+h.asset );
                 h.offset = annotationOffset;
                 parameterAnnotationHolders.add( h );
                 parameterMap.put( h.asset,new Integer( i ) );
