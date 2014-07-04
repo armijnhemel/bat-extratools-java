@@ -1,6 +1,6 @@
 Summary: A collection of extra Java tools for the Binary Analysis Tool
 Name: bat-extratools-java
-Version: 18.0
+Version: 19.0
 Release: 1
 License: BSD, public domain
 Source: %{name}-%{version}.tar.gz
