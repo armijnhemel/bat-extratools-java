@@ -1,3 +1,9 @@
+bat-extratools-java (20.0) unstable; urgency=low
+
+  * version bump to keep in sync with the rest
+
+ -- Armijn Hemel <armijn@binaryanalysis.org>  Sun, 15 Mar 2015 17:32:15 +0100
+
 bat-extratools-java (19.0) unstable; urgency=low
 
   * version bump to keep in sync with the rest
