@@ -20,7 +20,5 @@ ant
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_javadir}
 cp -p dedexer/bat-ddx.jar $RPM_BUILD_ROOT%{_javadir}/bat-ddx.jar
-cp -p jdeserialize/bat-jdeserialize.jar $RPM_BUILD_ROOT%{_javadir}/bat-jdeserialize.jar
 %files
 %{_javadir}/bat-ddx.jar
-%{_javadir}/bat-jdeserialize.jar
