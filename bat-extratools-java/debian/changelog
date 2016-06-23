@@ -1,3 +1,9 @@
+bat-extratools-java (26.0) unstable; urgency=low
+
+  * no longer package jdeserialize
+
+ -- Armijn Hemel <armijn@binaryanalysis.org>  Thu, 23 Jun 2016 20:35:11 +0200
+
 bat-extratools-java (25.0) unstable; urgency=low
 
   * version bump to keep in sync with the rest
