@@ -5,4 +5,3 @@ They are completely separate from BAT and are not under the same license as BAT.
 Included are:
 
 * dedexer - from http://dedexer.sourceforge.net/ - license on the webpage says "Dedexer is in the public domain, no rights are reserved. If you reuse it, please, retain the credits."
-* jdeserialize - from http://code.google.com/p/jdeserialize/ - license in the source code says "public domain", on code.google.com it says 'New BSD license'
