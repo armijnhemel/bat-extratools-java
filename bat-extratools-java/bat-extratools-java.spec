@@ -9,6 +9,8 @@ Packager: Armijn Hemel <armijn@binaryanalysis.org>
 BuildRequires: ant, java-devel, jpackage-utils
 Requires: java, jpackage-utils
 
+%global debug_package %{nil}
+
 %description
 A collection of extra Java tools for the Binary Analysis Tool.
 
